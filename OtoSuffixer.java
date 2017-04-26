@@ -5,7 +5,6 @@ import javax.swing.*;
 public class OtoSuffixer {
    public static void main(String [] args) {
       ArrayList<String> otoFile = new ArrayList<String>();
-      Scanner input = new Scanner(System.in);
       boolean windows, error = false;
       String macHeader = "";
       ImageIcon utau = new ImageIcon("utaulogo.png");
@@ -39,27 +38,34 @@ public class OtoSuffixer {
          while (reader.hasNext()) {
             otoFile.add(reader.next());
          }
+         reader.close();
          
          if (!windows) {
             macHeader = otoFile.remove(0);
          }
       } catch (Exception ex) {
          error = true;
+         ex.printStackTrace();
          JOptionPane.showMessageDialog(null, "Could not read oto.", "OTO Suffixer Error", JOptionPane.ERROR_MESSAGE);
       }
       
-      String[][] otoMatrix = new String[otoFile.size()][7];
-      int comma;
+      ArrayList<String[]> otoMatrix = new ArrayList<String[]>();
       
-      if (!error) {
-         for (int i = 0; i < otoFile.size(); i++) {
-            comma = 0;
-            otoFile.set(i, otoFile.get(i) + ",");
-            for (int j = 0; j < 7; j++) {
-               otoMatrix[i][j] = otoFile.get(i).substring(comma, otoFile.get(i).indexOf(",",comma));
-               comma = otoFile.get(i).indexOf(",",comma) + 1;
-            }
-         }
+	if (!error) {
+    	for (int i = 0; i < otoFile.size(); i++) {
+			 otoFile.set(i, otoFile.get(i) + ",");
+			 String line = otoFile.get(i);
+			 String[] arr = new String[7];
+			 int start = 0;
+			 int end = line.indexOf("=");
+			 for (int j = 0; j < 7; j++) {
+				 arr[j] = line.substring(start,end);
+				 start = end + 1;
+				 end = line.indexOf(",",start);
+			 }
+			 arr[0] = arr[0].substring(0,arr[0].length()-4);
+			 otoMatrix.add(arr);
+	     }
          
          /*System.out.print("Suffix: ");
          String suffix = input.next();*/
@@ -72,11 +78,12 @@ public class OtoSuffixer {
                writer.println(macHeader);
             
             for (String[] line : otoMatrix) {
-               writer.println(line[0] + "," + line[1] + suffix + "," + line[2] + "," + line[3] + "," + line[4] + "," + line[5] + "," + line[6]);
+               writer.println(line[0] + ".wav=" + line[1] + suffix + "," + line[2] + "," + line[3] + "," + line[4] + "," + line[5] + "," + line[6]);
             }
             writer.close();
          } catch (Exception ex) {
-         JOptionPane.showMessageDialog(null, "Could not write oto.", "OTO Suffixer Error", JOptionPane.ERROR_MESSAGE);
+        	 ex.printStackTrace();
+        	 JOptionPane.showMessageDialog(null, "Could not write oto.", "OTO Suffixer Error", JOptionPane.ERROR_MESSAGE);
          }
          //System.out.print("Done.");
          JOptionPane.showMessageDialog(null, "Done.", "OTO Suffixer", JOptionPane.INFORMATION_MESSAGE,utau);
